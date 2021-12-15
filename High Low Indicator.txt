@@ -1,0 +1,50 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © gauthamsunny621
+
+//@version=4
+strategy("Gautham Momentum ", overlay=true, margin_long=100, margin_short=100)
+
+//DAYHIGHLOWLINES
+float day_high=na
+float day_low=na
+
+t = time("1440", session.extended)
+is_first = na(t[1])  or t[1] < t and not na(t)
+
+//------------------------------------
+if is_first and barstate.isnew
+    day_high := high
+    day_low := low
+else
+    day_high := day_high[1]
+    day_low := day_low[1]
+
+longCondition = high > day_high 
+if (longCondition)
+    day_high := high
+    
+shortCondition = low < day_low 
+if (shortCondition)
+    day_low := low
+
+plot(day_high, color=color.green)
+plot(day_low, color=color.red)
+
+//________________________________________________________________________________________________________________________________________________________________________________________
+
+//HIGHLOWEMA
+HPeriod= input(21,"HIGH Period")
+LPeriod= input(21,"LOW Period")
+HLd= iff(close>nz(sma(high,HPeriod))[1],1,iff(close<nz(sma(low,LPeriod))[1],-1,0))
+HLv= valuewhen(HLd!=0,HLd,0)
+HiLo= iff(HLv==-1,sma(high,HPeriod),sma(low,LPeriod))
+HLcolor= HLv==-1 ? color.red : color.green
+plot(HiLo,linewidth=2, color=HLcolor)
+//_---------------------------------------------------------------------------------------------------------------
+//EMA
+EMALength = input(9, minval=1)
+ema3=ema(close,EMALength)
+src1 = input(close, title="Source")
+price=security(syminfo.tickerid, timeframe.period, src1)
+plot(ema3, title="EMA LINE", color=color.black, linewidth=2)
+//-------------------------------------------------------------------------------------------------------------------------
